@@ -22,21 +22,13 @@ public class CorsConfig {
                         .allowedOrigins("https://carlosaugustocue.github.io")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
-                        .allowCredentials(true)
+                        .allowCredentials(false) // Ojo: mira el paso 2
                         .maxAge(3600);
             }
         };
     }
 
-    @Bean
-    public CorsFilter corsFilter() {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        CorsConfiguration config = new CorsConfiguration();
-        config.setAllowCredentials(true);
-        config.setAllowedOrigins(Arrays.asList("https://carlosaugustocue.github.io"));
-        config.setAllowedHeaders(Arrays.asList("*"));
-        config.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        source.registerCorsConfiguration("/**", config);
-        return new CorsFilter(source);
-    }
+    // Eliminar o comentar este método si usas la config de arriba:
+    // @Bean
+    // public CorsFilter corsFilter() { ... }
 }
