@@ -5,6 +5,8 @@ const API_URL = 'https://inventory-system-production-18d5.up.railway.app'; // Ca
 function login(username, password) {
     const loginAlert = document.getElementById('login-alert');
     
+    console.log("Intentando iniciar sesión con:", username);
+    
     fetch(`${API_URL}/api/auth/signin`, {
         method: 'POST',
         headers: {
@@ -13,15 +15,23 @@ function login(username, password) {
         body: JSON.stringify({
             username: username,
             password: password
-        })
+        }),
+        credentials: 'omit'
     })
     .then(response => {
+        console.log("Respuesta recibida:", response);
         if (!response.ok) {
-            throw new Error('Credenciales inválidas');
+            return response.json().then(data => {
+                throw new Error(data.message || 'Credenciales inválidas');
+            }).catch(err => {
+                // Si no puede parsear como JSON
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            });
         }
         return response.json();
     })
     .then(data => {
+        console.log("Inicio de sesión exitoso:", data);
         // Store token and user info
         localStorage.setItem('token', data.token);
         localStorage.setItem('user', JSON.stringify({
@@ -35,6 +45,7 @@ function login(username, password) {
         window.location.href = 'dashboard.html';
     })
     .catch(error => {
+        console.error("Error al iniciar sesión:", error);
         loginAlert.textContent = error.message;
         loginAlert.classList.remove('d-none');
         setTimeout(() => {
@@ -45,9 +56,14 @@ function login(username, password) {
 
 // Register function
 function register(username, email, password, roles = ['user']) {
-    console.log("Enviando datos:", { username, email, password, roles });
+    const registerAlert = document.getElementById('register-alert');
     
-    fetch('https://inventory-system-production-18d5.up.railway.app/api/auth/signup', {
+    // Muestra mensaje de carga
+    registerAlert.textContent = "Enviando solicitud...";
+    registerAlert.classList.remove('d-none', 'alert-danger');
+    registerAlert.classList.add('alert-info');
+    
+    fetch(`https://inventory-system-production-18d5.up.railway.app/api/auth/signup`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -58,27 +74,36 @@ function register(username, email, password, roles = ['user']) {
             password,
             roles
         }),
-        credentials: 'omit' // Para evitar problemas CORS
+        // Importante: no enviar credenciales si tienes problemas CORS
+        credentials: 'omit'
     })
     .then(response => {
-        console.log("Respuesta completa:", response);
-        return response.text().then(text => {
-            console.log("Cuerpo de la respuesta:", text);
-            try {
-                return text ? JSON.parse(text) : {};
-            } catch (e) {
-                console.error("Error al parsear JSON:", e);
-                return { message: text };
-            }
-        });
+        console.log("Respuesta recibida:", response);
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.message || 'Error al registrarse');
+            }).catch(err => {
+                // Si no puede parsear como JSON
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
+            });
+        }
+        return response.json();
     })
     .then(data => {
-        console.log("Datos procesados:", data);
-        // Resto del código...
+        console.log("Datos recibidos:", data);
+        registerAlert.textContent = 'Registro exitoso. Redirigiendo al login...';
+        registerAlert.classList.remove('alert-info', 'alert-danger');
+        registerAlert.classList.add('alert-success');
+        
+        setTimeout(() => {
+            window.location.href = 'login.html';
+        }, 2000);
     })
     .catch(error => {
         console.error("Error completo:", error);
-        // Resto del código...
+        registerAlert.textContent = error.message || "Error en la comunicación con el servidor";
+        registerAlert.classList.remove('alert-info');
+        registerAlert.classList.add('alert-danger');
     });
 }
 
