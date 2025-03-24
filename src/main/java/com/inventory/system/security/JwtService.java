@@ -6,6 +6,7 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.env.Environment;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -26,6 +27,35 @@ public class JwtService {
 
     @Value("${security.jwt.refresh-token.expiration}")
     private long refreshExpiration;
+
+    private final Environment env;
+
+    public JwtService(Environment env) {
+        this.env = env;
+
+        // Fallback para entornos donde no se cargan las variables de entorno
+        if (secretKey == null || secretKey.isEmpty()) {
+            secretKey = env.getProperty("JWT_SECRET");
+        }
+
+        if (jwtExpiration == 0) {
+            String expStr = env.getProperty("JWT_EXPIRATION");
+            if (expStr != null) {
+                jwtExpiration = Long.parseLong(expStr);
+            } else {
+                jwtExpiration = 86400000; // 1 día por defecto
+            }
+        }
+
+        if (refreshExpiration == 0) {
+            String refreshExpStr = env.getProperty("REFRESH_EXPIRATION");
+            if (refreshExpStr != null) {
+                refreshExpiration = Long.parseLong(refreshExpStr);
+            } else {
+                refreshExpiration = 604800000; // 7 días por defecto
+            }
+        }
+    }
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
