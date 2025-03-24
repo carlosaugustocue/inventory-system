@@ -18,9 +18,13 @@ public class CorsConfig {
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/**")
+//                        .allowedOrigins("https://carlosaugustocue.github.io/inventory-system")
+//                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+//                        .allowedHeaders("*")
                 registry.addMapping("/**")
-                        .allowedOrigins("https://carlosaugustocue.github.io/inventory-system")
-                        .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                        .allowedOrigins("*")
+                        .allowedMethods("*")
                         .allowedHeaders("*")
                         .allowCredentials(false) // O 'true' si necesitas enviar cookies
                         .maxAge(3600);
