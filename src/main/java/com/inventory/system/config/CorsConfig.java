@@ -19,10 +19,10 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins("https://carlosaugustocue.github.io")
+                        .allowedOrigins("https://carlosaugustocue.github.io/inventory-system")
                         .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
                         .allowedHeaders("*")
-                        .allowCredentials(false) // Ojo: mira el paso 2
+                        .allowCredentials(false) // O 'true' si necesitas enviar cookies
                         .maxAge(3600);
             }
         };
