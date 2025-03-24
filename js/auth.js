@@ -45,14 +45,9 @@ function login(username, password) {
 
 // Register function
 function register(username, email, password, roles = ['user']) {
-    const registerAlert = document.getElementById('register-alert');
+    console.log("Enviando datos:", { username, email, password, roles });
     
-    // Muestra mensaje de carga
-    registerAlert.textContent = "Enviando solicitud...";
-    registerAlert.classList.remove('d-none', 'alert-danger');
-    registerAlert.classList.add('alert-info');
-    
-    fetch(`https://inventory-system-production-18d5.up.railway.app/api/auth/signup`, {
+    fetch('https://inventory-system-production-18d5.up.railway.app/api/auth/signup', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -63,36 +58,27 @@ function register(username, email, password, roles = ['user']) {
             password,
             roles
         }),
-        // Importante: no enviar credenciales si tienes problemas CORS
-        credentials: 'omit'
+        credentials: 'omit' // Para evitar problemas CORS
     })
     .then(response => {
-        console.log("Respuesta recibida:", response);
-        if (!response.ok) {
-            return response.json().then(data => {
-                throw new Error(data.message || 'Error al registrarse');
-            }).catch(err => {
-                // Si no puede parsear como JSON
-                throw new Error(`Error ${response.status}: ${response.statusText}`);
-            });
-        }
-        return response.json();
+        console.log("Respuesta completa:", response);
+        return response.text().then(text => {
+            console.log("Cuerpo de la respuesta:", text);
+            try {
+                return text ? JSON.parse(text) : {};
+            } catch (e) {
+                console.error("Error al parsear JSON:", e);
+                return { message: text };
+            }
+        });
     })
     .then(data => {
-        console.log("Datos recibidos:", data);
-        registerAlert.textContent = 'Registro exitoso. Redirigiendo al login...';
-        registerAlert.classList.remove('alert-info', 'alert-danger');
-        registerAlert.classList.add('alert-success');
-        
-        setTimeout(() => {
-            window.location.href = 'login.html';
-        }, 2000);
+        console.log("Datos procesados:", data);
+        // Resto del código...
     })
     .catch(error => {
         console.error("Error completo:", error);
-        registerAlert.textContent = error.message || "Error en la comunicación con el servidor";
-        registerAlert.classList.remove('alert-info');
-        registerAlert.classList.add('alert-danger');
+        // Resto del código...
     });
 }
 
