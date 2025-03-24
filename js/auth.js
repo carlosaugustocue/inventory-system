@@ -75,7 +75,7 @@ function register(username, email, password, roles = ['user']) {
             roles
         }),
         // Importante: no enviar credenciales si tienes problemas CORS
-        credentials: 'omit'
+        // credentials: 'omit'
     })
     .then(response => {
         console.log("Respuesta recibida:", response);
