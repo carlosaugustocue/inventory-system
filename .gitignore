@@ -37,7 +37,6 @@ build/
 # Variables de entorno
 .env
 .env.local
-.env.*.local
 
 # Archivos de configuración con secretos
 application-*.properties
