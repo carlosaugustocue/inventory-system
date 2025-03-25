@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración - Sistema de Inventario</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container">
+            <a class="navbar-brand" href="../index.html">Sistema de Inventario</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="dashboard.html">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="products.html">Productos</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="admin.html">Panel de Admin</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" id="logout-btn">Cerrar Sesión</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Admin Panel -->
+    <div class="container mt-5">
+        <h1 class="mb-4">Panel de Administración</h1>
+        
+        <div id="admin-alert" class="alert d-none" role="alert"></div>
+        
+        <!-- Admin Stats Cards -->
+        <div class="row stats-container mb-4">
+            <div class="col-md-4 mb-3">
+                <div class="card stats-card primary">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Total Usuarios</h6>
+                                <h3 id="total-users">--</h3>
+                            </div>
+                            <div class="fs-1 text-primary">
+                                <i class="bi bi-people"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card stats-card warning">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Productos Críticos</h6>
+                                <h3 id="critical-products">--</h3>
+                            </div>
+                            <div class="fs-1 text-warning">
+                                <i class="bi bi-exclamation-triangle"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card stats-card danger">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <h6 class="text-muted mb-1">Cuentas Bloqueadas</h6>
+                                <h3 id="locked-accounts">--</h3>
+                            </div>
+                            <div class="fs-1 text-danger">
+                                <i class="bi bi-lock"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Users Table -->
+        <div class="card mb-4">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Gestión de Usuarios</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Usuario</th>
+                                <th>Email</th>
+                                <th>Roles</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body">
+                            <tr>
+                                <td colspan="6" class="text-center">Cargando usuarios...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <!-- System Logs -->
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">Actividad Reciente</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-group" id="activity-log">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>Panel de administración cargado</span>
+                        <span class="badge bg-primary rounded-pill">Ahora</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Unlock Account Modal -->
+    <div class="modal fade" id="unlockModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar Desbloqueo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Estás seguro de que deseas desbloquear la cuenta del usuario <strong id="unlock-username"></strong>?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" id="confirm-unlock-btn">Desbloquear</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-light py-4 mt-5">
+        <div class="container text-center">
+            <p class="mb-0">Sistema de Inventario &copy; 2025</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="../js/utils.js"></script>
+    <script src="../js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if user is authenticated and is admin
+            if (!requireAuth()) {
+                return;
+            }
+            
+            if (!hasRole('ADMIN')) {
+                window.location.href = 'dashboard.html';
+                return;
+            }
+            
+            // Load admin data
+            loadAdminData();
+            
+            // Setup event listeners
+            document.getElementById('confirm-unlock-btn').addEventListener('click', unlockUserAccount);
+        });
+        
+        // Load admin dashboard data
+        function loadAdminData() {
+            // Fetch users
+            fetch(`${API_URL}/api/admin/users`, {
+                method: 'GET',
+                headers: getAuthHeaders()
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar los usuarios');
+                }
+                return response.json();
+            })
+            .then(users => {
+                // Update users count
+                document.getElementById('total-users').textContent = users.length;
+                
+                // Count locked accounts
+                const lockedAccounts = users.filter(user => !user.accountNonLocked).length;
+                document.getElementById('locked-accounts').textContent = lockedAccounts;
+                
+                // Update users table
+                updateUsersTable(users);
+                
+                // Add to activity log
+                addActivityLog(`Se cargaron ${users.length} usuarios`);
+            })
+            .catch(error => {
+                showAlert('#admin-alert', handleApiError(error));
+                addActivityLog('Error al cargar usuarios: ' + error.message);
+            });
+            
+            // Fetch products for critical stock info
+            fetch(`${API_URL}/api/products`, {
+                method: 'GET',
+                headers: getAuthHeaders()
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('No se pudieron cargar los productos');
+                }
+                return response.json();
+            })
+            .then(products => {
+                // Count critical products (stock < 5)
+                const criticalProducts = products.filter(product => product.quantity < 5).length;
+                document.getElementById('critical-products').textContent = criticalProducts;
+                
+                // Add to activity log
+                addActivityLog(`Se encontraron ${criticalProducts} productos con stock crítico`);
+            })
+            .catch(error => {
+                console.error('Error loading products:', error);
+                addActivityLog('Error al cargar productos: ' + error.message);
+            });
+        }
+        
+        // Update users table
+        function updateUsersTable(users) {
+            const usersTableBody = document.getElementById('users-table-body');
+            
+            if (users.length === 0) {
+                usersTableBody.innerHTML = '<tr><td colspan="6" class="text-center">No hay usuarios disponibles</td></tr>';
+                return;
+            }
+            
+            usersTableBody.innerHTML = '';
+            
+            users.forEach(user => {
+                const row = document.createElement('tr');
+                
+                // Format roles
+                const roles = user.roles.map(role => {
+                    let badge = 'bg-secondary';
+                    if (role.name === 'ROLE_ADMIN') badge = 'bg-danger';
+                    if (role.name === 'ROLE_MANAGER') badge = 'bg-warning';
+                    return `<span class="badge ${badge}">${role.name.replace('ROLE_', '')}</span>`;
+                }).join(' ');
+                
+                // User status
+                let statusBadge = '<span class="badge bg-success">Activo</span>';
+                if (!user.enabled) {
+                    statusBadge = '<span class="badge bg-secondary">Desactivado</span>';
+                } else if (!user.accountNonLocked) {
+                    statusBadge = '<span class="badge bg-danger">Bloqueado</span>';
+                }
+                
+                // Actions
+                let actions = '';
+                if (!user.accountNonLocked) {
+                    actions += `<button class="btn btn-sm btn-outline-success unlock-btn" data-id="${user.id}" data-username="${user.username}" data-bs-toggle="modal" data-bs-target="#unlockModal">
+                        <i class="bi bi-unlock"></i> Desbloquear
+                    </button>`;
+                }
+                
+                row.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.username}</td>
+                    <td>${user.email}</td>
+                    <td>${roles}</td>
+                    <td>${statusBadge}</td>
+                    <td>${actions}</td>
+                `;
+                
+                usersTableBody.appendChild(row);
+            });
+            
+            // Add event listeners to unlock buttons
+            document.querySelectorAll('.unlock-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    const userId = this.getAttribute('data-id');
+                    const username = this.getAttribute('data-username');
+                    
+                    document.getElementById('unlock-username').textContent = username;
+                    document.getElementById('confirm-unlock-btn').setAttribute('data-username', username);
+                });
+            });
+        }
+        
+        // Unlock user account
+        function unlockUserAccount() {
+            const username = this.getAttribute('data-username');
+            const modal = bootstrap.Modal.getInstance(document.getElementById('unlockModal'));
+            
+            fetch(`${API_URL}/api/admin/users/${username}/unlock`, {
+                method: 'PUT',
+                headers: getAuthHeaders()
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Error al desbloquear la cuenta');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Close modal
+                modal.hide();
+                
+                // Show success message
+                showAlert('#admin-alert', 'Cuenta desbloqueada con éxito', 'success');
+                
+                // Add to activity log
+                addActivityLog(`Cuenta de usuario ${username} desbloqueada`);
+                
+                // Reload admin data
+                setTimeout(() => {
+                    loadAdminData();
+                }, 1000);
+            })
+            .catch(error => {
+                modal.hide();
+                showAlert('#admin-alert', handleApiError(error));
+                addActivityLog(`Error al desbloquear cuenta ${username}: ${error.message}`);
+            });
+        }
+        
+        // Add entry to activity log
+        function addActivityLog(message) {
+            const activityLog = document.getElementById('activity-log');
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            
+            const logItem = document.createElement('li');
+            logItem.className = 'list-group-item d-flex justify-content-between align-items-center';
+            logItem.innerHTML = `
+                <span>${message}</span>
+                <span class="badge bg-primary rounded-pill">${timeString}</span>
+            `;
+            
+            activityLog.prepend(logItem);
+            
+            // Limit to 10 items
+            if (activityLog.children.length > 10) {
+                activityLog.removeChild(activityLog.lastChild);
+            }
+        }
+    </script>
+</body>
+</html>
