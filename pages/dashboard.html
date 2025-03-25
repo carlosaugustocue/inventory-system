@@ -180,69 +180,80 @@
             loadDashboardData();
         });
         
+        
         // Load dashboard data
-        function loadDashboardData() {
-            fetch(`${API_URL}/api/products`, {
-                method: 'GET',
-                headers: getAuthHeaders()
-            })
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error('No se pudieron cargar los productos');
-                }
-                return response.json();
-            })
-            .then(products => {
-                // Update stats
-                document.getElementById('total-products').textContent = products.length;
-                
-                // Calculate total value
-                const totalValue = products.reduce((sum, product) => sum + (product.price * product.quantity), 0);
-                document.getElementById('total-value').textContent = formatCurrency(totalValue);
-                
-                // Count categories
-                const categories = new Set(products.map(product => product.category));
-                document.getElementById('total-categories').textContent = categories.size;
-                
-                // Count low stock products (less than 5)
-                const lowStock = products.filter(product => product.quantity < 5).length;
-                document.getElementById('low-stock').textContent = lowStock;
-                
-                // Update recent products table
-                const recentProductsTable = document.getElementById('recent-products');
-                
-                if (products.length === 0) {
-                    recentProductsTable.innerHTML = '<tr><td colspan="5" class="text-center">No hay productos disponibles</td></tr>';
-                    return;
-                }
-                
-                recentProductsTable.innerHTML = '';
-                
-                // Show only the 5 most recent products
-                const recentProducts = products.slice(0, 5);
-                
-                recentProducts.forEach(product => {
-                    const row = document.createElement('tr');
-                    
-                    row.innerHTML = `
-                        <td>${product.name}</td>
-                        <td>${product.category || '-'}</td>
-                        <td>${product.quantity}</td>
-                        <td>${formatCurrency(product.price)}</td>
-                        <td>
-                            <a href="product-form.html?id=${product.id}" class="btn btn-sm btn-outline-primary">
-                                <i class="bi bi-pencil"></i>
-                            </a>
-                        </td>
-                    `;
-                    
-                    recentProductsTable.appendChild(row);
-                });
-            })
-            .catch(error => {
-                showAlert('#dashboard-alert', handleApiError(error));
-            });
+function loadDashboardData() {
+    fetch(`${API_URL}/api/products`, {
+        method: 'GET',
+        headers: getAuthHeaders()
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('No se pudieron cargar los productos');
         }
+        return response.json();
+    })
+    .then(products => {
+        // Update stats
+        document.getElementById('total-products').textContent = products.length;
+        
+        // Calculate total value
+        const totalValue = products.reduce((sum, product) => sum + (product.price * product.quantity), 0);
+        document.getElementById('total-value').textContent = formatCurrency(totalValue);
+        
+        // Count categories
+        const categories = new Set(products.map(product => product.category));
+        document.getElementById('total-categories').textContent = categories.size;
+        
+        // Count low stock products (less than 5)
+        const lowStock = products.filter(product => product.quantity < 5).length;
+        document.getElementById('low-stock').textContent = lowStock;
+        
+        // Update recent products table
+        const recentProductsTable = document.getElementById('recent-products');
+        
+        if (products.length === 0) {
+            recentProductsTable.innerHTML = '<tr><td colspan="5" class="text-center">No hay productos disponibles</td></tr>';
+            return;
+        }
+        
+        recentProductsTable.innerHTML = '';
+        
+        // Show only the 5 most recent products
+        const recentProducts = products.slice(0, 5);
+        
+        recentProducts.forEach(product => {
+            const row = document.createElement('tr');
+            
+            // Determinar el color del badge según la cantidad
+            let badgeClass = '';
+            if (product.quantity < 5) {
+                badgeClass = 'bg-danger'; // Rojo para cantidades menores a 5
+            } else if (product.quantity >= 5 && product.quantity <= 10) {
+                badgeClass = 'bg-warning'; // Amarillo para cantidades entre 5 y 10
+            } else {
+                badgeClass = 'bg-success'; // Verde para cantidades mayores a 10
+            }
+            
+            row.innerHTML = `
+                <td>${product.name}</td>
+                <td>${product.category || '-'}</td>
+                <td><span class="badge ${badgeClass}">${product.quantity}</span></td>
+                <td>${formatCurrency(product.price)}</td>
+                <td>
+                    <a href="product-form.html?id=${product.id}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-pencil"></i>
+                    </a>
+                </td>
+            `;
+            
+            recentProductsTable.appendChild(row);
+        });
+    })
+    .catch(error => {
+        showAlert('#dashboard-alert', handleApiError(error));
+    });
+}
     </script>
 </body>
 </html>
